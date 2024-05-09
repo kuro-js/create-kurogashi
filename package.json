@@ -16,7 +16,7 @@
     "build": "tsup",
     "lint": "eslint --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
     "lint:fix": "automd && eslint --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w",
-    "prepack": "bun build",
+    "prepack": "bun run build",
     "release": "bun test && changelogen --release && npm publish && git push --follow-tags",
     "test": "bun lint && bun test"
   },
