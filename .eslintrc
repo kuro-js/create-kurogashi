@@ -1,0 +1,12 @@
+{
+  "extends": ["eslint-config-unjs"],
+  "rules": {
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "require-await": "off",
+    "unicorn/no-null": "off",
+    "unicorn/no-process-exit": "off",
+    "unicorn/consistent-destructuring": "off",
+    "unicorn/no-array-reduce": "off",
+    "multiline-ternary": "off"
+  }
+}

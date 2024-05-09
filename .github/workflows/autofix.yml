@@ -1,0 +1,19 @@
+name: autofix.ci
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+permissions:
+  contents: read
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install
+      - run: bun x prettier --write .
+      - uses: autofix-ci/action@ea32e3a12414e6d3183163c3424a7d7a8631ad84
+        with:
+          commit-message: "chore: apply automated updates"
