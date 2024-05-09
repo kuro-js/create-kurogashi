@@ -1,45 +1,17 @@
 ## Template
+Create a new `kurogashi` project with simple command.
 
-<!-- automd:badges color="yellow" license name="maripose" codecov bundlephobia packagephobia -->
-
-[![npm version](https://img.shields.io/npm/v/maripose?color=yellow)](https://npmjs.com/package/maripose)
-[![npm downloads](https://img.shields.io/npm/dm/maripose?color=yellow)](https://npmjs.com/package/maripose)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/maripose?color=yellow)](https://bundlephobia.com/package/maripose)
-[![codecov](https://img.shields.io/codecov/c/gh/js/create-kurogashi?color=yellow)](https://codecov.io/gh/js/create-kurogashi)
-[![license](https://img.shields.io/github/license/js/create-kurogashi?color=yellow)](https://github.com/js/create-kurogashi/blob/main/LICENSE)
-
-<!-- /automd -->
-
-desc
-
-<!-- automd:pm-install name="maripose" dev -->
-
-```sh
-# ✨ Auto-detect
-npx nypm install -D maripose
-
-# npm
-npm install -D maripose
-
-# yarn
-yarn add -D maripose
-
-# pnpm
-pnpm install -D maripose
-
-# bun
-bun install -D maripose
+```bash
+bun create kurogashi
 ```
 
-<!-- /automd -->
+<!-- automd:contributors author="malezjaa" license="MIT" github="kuro-js/create-kurogashi" -->
 
-<!-- automd:contributors author="malezjaa" license="MIT" github="maripose-js/maripose" -->
-
-Published under the [MIT](https://github.com/maripose-js/maripose/blob/main/LICENSE) license.
-Made by [@malezjaa](https://github.com/malezjaa) and [community](https://github.com/maripose-js/maripose/graphs/contributors) 💛
+Published under the [MIT](https://github.com/kuro-js/create-kurogashi/blob/main/LICENSE) license.
+Made by [@malezjaa](https://github.com/malezjaa) and [community](https://github.com/kuro-js/create-kurogashi/graphs/contributors) 💛
 <br><br>
-<a href="https://github.com/maripose-js/maripose/graphs/contributors">
-<img src="https://contrib.rocks/image?repo=maripose-js/maripose" />
+<a href="https://github.com/kuro-js/create-kurogashi/graphs/contributors">
+<img src="https://contrib.rocks/image?repo=kuro-js/create-kurogashi" />
 </a>
 
 <!-- /automd -->
