@@ -74,7 +74,7 @@ export class InitCommand extends BaseCommand {
 
     if (existsSync(cwd) && !this.force) {
       logger.error(
-        `Directory already exists. Use \`--force\` to clean all the files before.`,
+        `Directory already exists: \`${cwd}\`. Use \`--force\` to clean all the files before.`,
       );
       return;
     }
