@@ -7,7 +7,7 @@
   "sideEffects": false,
   "type": "module",
   "bin": {
-    "create-kurogashi": "dist/index.js"
+    "create-kurogashi": "dist/index.mjs"
   },
   "files": [
     "dist"
