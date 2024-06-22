@@ -1,0 +1,3 @@
+{
+  "extends": ".kuro/dev/tsconfig.json"
+}

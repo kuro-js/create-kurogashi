@@ -1,130 +1,152 @@
-import { execSync } from "node:child_process";
-import { group, confirm, note, text, select, spinner } from "@clack/prompts";
-import { resolve, dirname } from "pathe";
-import { existsSync, mkdirSync, writeFileSync } from "fs-extra";
-import chalk from "chalk";
+import { fileURLToPath } from "node:url";
+import { BaseCommand, createCli, options } from "curzon";
+import {
+  detectPackageManager,
+  installDependencies,
+  type PackageManager,
+} from "unnpm";
+import { dirname, join, resolve } from "pathe";
+import { $ } from "bun";
+import { coloid } from "coloid";
+import { existsSync, mkdirSync, rmdirSync, rmSync } from "fs-extra";
+import { unzipSync } from "cross-zip";
+import { name, version, description } from "../package.json";
 
-note(
-  "Welcome to Kurogashi! \nThis command will help you initialize a new Kurogashi project.",
-);
+export class InitCommand extends BaseCommand {
+  static paths = ["init"];
 
-const options = await group({
-  name: () =>
-    text({
-      message: "Project name",
-      placeholder: "project-name",
-      defaultValue: "project-name",
-    }),
-  typescript: () =>
-    confirm({
-      message: "Do you want to use typescript?",
-    }),
-  git: () =>
-    confirm({
-      message: "Initialize a git repository?",
-    }),
-  install: () => confirm({ message: "Install dependencies?" }),
+  static meta = {
+    name: "init",
+    description: "Initialize a new Kurogashi project",
+  };
+
+  path = options.positional("path", {
+    description: "Path to initialize the project",
+    required: false,
+  });
+
+  type = options.string("type", {
+    description: "Type of project to initialize <basic|module>",
+    defaultValue: "basic",
+    short: "t",
+  });
+
+  noInstall = options.boolean("no-install", {
+    description: "Skip installing dependencies",
+    defaultValue: false,
+  });
+
+  noGit = options.boolean("no-git", {
+    description: "Skip initializing git repository",
+    defaultValue: false,
+  });
+
+  packageManager = options.string("package-manager", {
+    description: "Package manager to use <npm|yarn|pnpm|bun>",
+    short: "p",
+  });
+
+  root = options.string("root", {
+    description: "Root directory of the project",
+    short: "r",
+  });
+
+  force = options.boolean("force", {
+    description: "Force initialization",
+    defaultValue: false,
+    short: "f",
+  });
+
+  async run() {
+    const cwd = resolve(this.root || process.cwd(), this.path || "");
+    const logger = coloid.newTag("create-kurogashi");
+    const install = !this.noInstall;
+    const initializeGit = !this.noGit;
+
+    if (!this.type) {
+      logger.error("Project type is required");
+      return;
+    }
+
+    if (!["basic", "module"].includes(this.type)) {
+      logger.error(`Invalid project type: ${this.type}`);
+      return;
+    }
+
+    if (existsSync(cwd) && !this.force) {
+      logger.error(
+        `Directory already exists. Use \`--force\` to clean all the files before.`,
+      );
+      return;
+    }
+
+    logger.info(`Initializing \`${this.type}\` project`);
+
+    if (this.force) {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+    mkdirSync(cwd, { recursive: true });
+
+    let packageManager: PackageManager;
+
+    try {
+      packageManager = (this.packageManager ||
+        detectPackageManager()) as PackageManager;
+    } catch {
+      packageManager = "bun";
+    }
+
+    logger.info(`Using package manager: ${packageManager}`);
+
+    const distDir = dirname(fileURLToPath(import.meta.url));
+    const templatePath = join(distDir, "templates", this.type + ".zip");
+    if (!existsSync(templatePath)) {
+      logger.error(`Template for ${this.type} not found`);
+      return;
+    }
+
+    unzipSync(templatePath, cwd);
+
+    if (install) {
+      try {
+        await Promise.all([
+          await installDependencies({
+            packageManager: packageManager as PackageManager,
+            cwd,
+          }),
+        ]);
+      } catch (error) {
+        logger.error("Failed to install dependencies");
+        logger.error(error);
+      }
+
+      logger.success("Dependencies installed");
+    }
+
+    if (initializeGit) {
+      logger.info("Initializing git repository");
+      try {
+        $`cd ${cwd} && git init`;
+        logger.success("Git repository initialized");
+      } catch (error) {
+        logger.error("Failed to initialize git repository");
+        logger.error(error);
+      }
+    }
+
+    logger.success(`🐼 Project has been initialized for ${this.type}!`);
+
+    logger.note(`To start the development server, run ${packageManager} dev`);
+  }
+}
+
+const cli = createCli({
+  appName: "Create Kurogashi",
+  binaryName: name,
+  description,
+  version,
 });
 
-const pm = await select({
-  message: "Choose a package manager",
-  options: [
-    { value: "npm", label: "npm" },
-    { value: "yarn", label: "yarn" },
-    { value: "pnpm", label: "pnpm" },
-    { value: "bun", label: "bun" },
-  ],
+cli.run({
+  rootCommand: InitCommand,
 });
-
-const packageJson = {
-  name: options.name,
-  scripts: {
-    dev: "bun --bun kurogashi dev",
-    build: "bun --bun kurogashi build",
-  },
-  dependencies: {
-    kurogashi: "latest",
-  },
-  devDependencies: {
-    "@types/bun": "latest",
-  },
-};
-const tsConfig = {
-  compilerOptions: {
-    lib: ["ESNext", "DOM", "DOM.Iterable"],
-    target: "ESNext",
-    module: "ESNext",
-    moduleDetection: "force",
-    allowJs: true,
-    moduleResolution: "bundler",
-    verbatimModuleSyntax: true,
-    strict: true,
-    skipLibCheck: true,
-    noFallthroughCasesInSwitch: true,
-    noUnusedLocals: false,
-    noUnusedParameters: false,
-    noPropertyAccessFromIndexSignature: false,
-  },
-};
-
-const path = resolve(options.name);
-
-if (existsSync(path)) {
-  console.log(chalk.red(`The directory ${chalk.gray(path)} already exists.`));
-  process.exit(1);
-} else {
-  mkdirSync(path, {
-    recursive: true,
-  });
-}
-
-const s = spinner();
-
-s.start("Creating project files");
-
-const files = [
-  { path: "package.json", content: JSON.stringify(packageJson, null, 2) },
-  {
-    path: `src/routes/hello.${options.typescript ? "ts" : "js"}`,
-    content: `import { defineEvent, getHeaders } from "kurogashi"; \n\nexport default defineEvent((event) => {\n  return getHeaders(event)\n});`,
-  },
-  {
-    path: `kurogashi.config.${options.typescript ? "ts" : "js"}`,
-    content: `import { defineConfig } from "kurogashi"; \n\nexport default defineConfig({});`,
-  },
-];
-
-if (options.typescript) {
-  packageJson.devDependencies["typescript"] = "latest";
-  files.push({
-    path: "tsconfig.json",
-    content: JSON.stringify(tsConfig, null, 2),
-  });
-}
-
-if (options.git) {
-  execSync("git init", { cwd: path });
-
-  files.push({ path: ".gitignore", content: "node_modules\ndist\n.idea" });
-}
-
-for (const file of files) {
-  const filePath = resolve(path, file.path);
-  const parentDir = dirname(filePath);
-
-  if (!existsSync(parentDir)) {
-    mkdirSync(parentDir, { recursive: true });
-  }
-
-  if (file.content) {
-    writeFileSync(filePath, file.content);
-  } else {
-    mkdirSync(filePath, { recursive: true });
-  }
-}
-
-if (options.install) {
-  execSync(`${pm} install`, { cwd: path });
-}
-
-s.stop("🎉 Project created");

@@ -1,0 +1,19 @@
+{
+  "name": "kurogashi-app",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "bun --bun kurogashi build",
+    "dev": "bun --bun kurogashi dev",
+    "postinstall": "bun --bun kurogashi prepare"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "kurogashi": "latest"
+  }
+}
