@@ -1,4 +1,4 @@
-## Template
+## Create Kurogashi
 Create a new `kurogashi` project with simple command.
 
 ```bash
