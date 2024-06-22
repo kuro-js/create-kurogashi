@@ -6,9 +6,8 @@ import {
   type PackageManager,
 } from "unnpm";
 import { dirname, join, resolve } from "pathe";
-import { $ } from "bun";
 import { coloid } from "coloid";
-import { existsSync, mkdirSync, rmdirSync, rmSync } from "fs-extra";
+import { existsSync, mkdirSync, rmSync } from "fs-extra";
 import { unzipSync } from "cross-zip";
 import { name, version, description } from "../package.json";
 
@@ -126,7 +125,7 @@ export class InitCommand extends BaseCommand {
     if (initializeGit) {
       logger.info("Initializing git repository");
       try {
-        $`cd ${cwd} && git init`;
+        Bun.spawnSync(["git", "init"], { cwd });
         logger.success("Git repository initialized");
       } catch (error) {
         logger.error("Failed to initialize git repository");
@@ -136,7 +135,7 @@ export class InitCommand extends BaseCommand {
 
     logger.success(`🐼 Project has been initialized for ${this.type}!`);
 
-    logger.note(`To start the development server, run ${packageManager} dev`);
+    logger.note(`To start the development server, run: ${packageManager} dev`);
   }
 }
 
